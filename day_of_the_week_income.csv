@@ -1,4 +1,4 @@
-seller,day_of_week,income
+"seller","day_of_week","income"
 Abraham Bennet,Sunday,702083
 Albert Ringer,Sunday,439902
 Ann Dull,Sunday,457104
@@ -153,4 +153,5 @@ Reginald Blotchet-Halls,Saturday,293262
 Sheryl Hunter,Saturday,251563
 Stearns MacFeather,Saturday,243738
 Sylvia Panteley,Saturday,249403
+
 

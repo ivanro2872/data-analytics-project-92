@@ -66,7 +66,7 @@ ORDER BY
 -- главный запрос, группировка продавцов и дню недели
 SELECT 
     e.first_name || ' ' || e.last_name AS seller,  -- объединяем имя и фамилию продавцов
-    TRIM(TO_CHAR(s.sale_date, 'Day')) AS day_of_week,  -- получаем день недели, убираем лишние пробелы
+    TRIM(TO_CHAR(s.sale_date, 'day')) AS day_of_week,  -- получаем день недели, убираем лишние пробелы
     FLOOR(SUM(s.quantity))::INT AS income  -- суммируем количество и обрезаем дробную часть
 FROM sales s
 -- соединение с таблицей employees, для получения имени и фамилии продавцов
@@ -74,7 +74,7 @@ JOIN employees e ON s.sales_person_id = e.employee_id
 -- группируем данные, по имени продавцов, по дню недели, по порядковому номеру дня недели (для корректной сортировки)
 GROUP BY 
     e.first_name || ' ' || e.last_name,
-    TRIM(TO_CHAR(s.sale_date, 'Day')),
+    TRIM(TO_CHAR(s.sale_date, 'day')),
     EXTRACT(DOW FROM s.sale_date)
 -- фильтруем группы, оставляя только те, у которых сумма quantity > 0
 HAVING 
@@ -177,4 +177,5 @@ JOIN customers c ON fpc.customer_id = c.customer_id
 JOIN employees e ON fpc.employee_id = e.employee_id
 -- сортируем результат по ID покупателя
 ORDER BY c.customer_id;
+
 

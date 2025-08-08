@@ -1,12 +1,10 @@
 -- Общее количество покупателей
--- Подсчёт всех записей в таблице customers
 SELECT
     COUNT(*) AS customers_count
 FROM customers;
 
 
 -- Топ-10 самых прибыльных продавцов
--- Выручка = цена × количество, сортировка по убыванию
 SELECT
     e.first_name || ' ' || e.last_name AS seller,
     COUNT(s.sales_id) AS operations,
@@ -20,7 +18,6 @@ LIMIT 10;
 
 
 -- Продавцы с выручкой ниже средней
--- Сравниваем среднюю выручку на сделку с общим средним
 WITH seller_avg_income AS (
     SELECT
         e.employee_id,
@@ -45,7 +42,6 @@ ORDER BY average_income ASC;
 
 
 -- Выручка по дням недели и продавцам
--- Группировка по дню недели и продавцу, сортировка по дням: пн → вс
 SELECT
     e.first_name || ' ' || e.last_name AS seller,
     LOWER(TRIM(TO_CHAR(s.sale_date, 'day'))) AS day_of_week,
@@ -71,7 +67,6 @@ ORDER BY
 
 
 -- Распределение покупателей по возрастным группам
--- Группы: 16–25, 26–40, 40+; исключаем NULL в age
 SELECT
     CASE
         WHEN age BETWEEN 16 AND 25 THEN '16-25'
@@ -98,7 +93,6 @@ ORDER BY
 
 
 -- Ежемесячная статистика: количество клиентов и выручка
--- Агрегация по месяцам, подсчёт уникальных покупателей и дохода
 SELECT
     TO_CHAR(s.sale_date, 'YYYY-MM') AS selling_month,
     COUNT(DISTINCT s.customer_id) AS total_customers,
@@ -111,7 +105,6 @@ ORDER BY selling_month;
 
 
 -- Первые бесплатные покупки клиентов
--- Находим первую по дате покупку с price = 0 для каждого клиента
 WITH first_sales AS (
     SELECT
         s.customer_id,

@@ -7,9 +7,9 @@ SELECT
     e.first_name || ' ' || e.last_name AS seller,
     COUNT(s.sales_id) AS operations,
     FLOOR(SUM(p.price * s.quantity)) AS income
-FROM sales s
-JOIN employees e ON s.sales_person_id = e.employee_id
-JOIN products p ON s.product_id = p.product_id
+FROM sales AS s
+INNER JOIN employees AS e ON s.sales_person_id = e.employee_id
+INNER JOIN products AS p ON s.product_id = p.product_id
 GROUP BY e.first_name, e.last_name
 ORDER BY income DESC
 LIMIT 10;
@@ -20,20 +20,22 @@ WITH seller_avg_income AS (
         e.employee_id,
         TRIM(CONCAT(e.first_name, ' ', e.last_name)) AS seller,
         AVG(p.price * s.quantity) AS avg_income_per_sale
-    FROM sales s
-    JOIN employees e ON s.sales_person_id = e.employee_id
-    JOIN products p ON s.product_id = p.product_id
+    FROM sales AS s
+    INNER JOIN employees AS e ON s.sales_person_id = e.employee_id
+    INNER JOIN products AS p ON s.product_id = p.product_id
     GROUP BY e.employee_id, e.first_name, e.last_name
 ),
+
 overall_avg AS (
     SELECT AVG(avg_income_per_sale) AS avg_of_averages
     FROM seller_avg_income
 )
+
 SELECT 
     sai.seller,
-    FLOOR(sai.avg_income_per_sale)::INTEGER AS average_income
-FROM seller_avg_income sai
-CROSS JOIN overall_avg oa
+    FLOOR(sai.avg_income_per_sale) AS average_income
+FROM seller_avg_income AS sai
+CROSS JOIN overall_avg AS oa
 WHERE sai.avg_income_per_sale < oa.avg_of_averages
 ORDER BY average_income ASC;
 
@@ -41,21 +43,13 @@ ORDER BY average_income ASC;
 SELECT 
     e.first_name || ' ' || e.last_name AS seller,
     LOWER(TRIM(TO_CHAR(s.sale_date, 'day'))) AS day_of_week,
-    FLOOR(SUM(p.price * s.quantity))::INTEGER AS income
-FROM sales s
-JOIN employees e ON s.sales_person_id = e.employee_id
-JOIN products p ON s.product_id = p.product_id
-GROUP BY e.first_name, e.last_name, LOWER(TRIM(TO_CHAR(s.sale_date, 'day')))
+    FLOOR(SUM(p.price * s.quantity)) AS income
+FROM sales AS s
+INNER JOIN employees AS e ON s.sales_person_id = e.employee_id
+INNER JOIN products AS p ON s.product_id = p.product_id
+GROUP BY e.first_name, e.last_name, s.sale_date
 ORDER BY 
-    CASE LOWER(TRIM(TO_CHAR(s.sale_date, 'day')))
-        WHEN 'monday' THEN 1
-        WHEN 'tuesday' THEN 2
-        WHEN 'wednesday' THEN 3
-        WHEN 'thursday' THEN 4
-        WHEN 'friday' THEN 5
-        WHEN 'saturday' THEN 6
-        WHEN 'sunday' THEN 7
-    END,
+    EXTRACT(DOW FROM s.sale_date),
     e.first_name || ' ' || e.last_name;
 
 -- выбираем возрастные группы и количество покупателей в каждой группе
@@ -88,8 +82,8 @@ SELECT
     TO_CHAR(s.sale_date, 'YYYY-MM') AS selling_month,
     COUNT(DISTINCT s.customer_id) AS total_customers,
     FLOOR(SUM(s.quantity * p.price)) AS income
-FROM sales s
-JOIN products p ON s.product_id = p.product_id
+FROM sales AS s
+INNER JOIN products AS p ON s.product_id = p.product_id
 WHERE s.sale_date IS NOT NULL
 GROUP BY TO_CHAR(s.sale_date, 'YYYY-MM')
 ORDER BY selling_month;
@@ -105,20 +99,22 @@ WITH first_sales AS (
             PARTITION BY s.customer_id
             ORDER BY s.sale_date
         ) AS rn
-    FROM sales s
-    JOIN products p ON s.product_id = p.product_id
+    FROM sales AS s
+    INNER JOIN products AS p ON s.product_id = p.product_id
     WHERE p.price = 0
 ),
+
 first_free_customers AS (
     SELECT *
     FROM first_sales
     WHERE rn = 1
 )
+
 SELECT
     c.first_name || ' ' || c.last_name AS customer,
     fpc.sale_date,
     e.first_name || ' ' || e.last_name AS seller
-FROM first_free_customers fpc
-JOIN customers c ON fpc.customer_id = c.customer_id
-JOIN employees e ON fpc.employee_id = e.employee_id
+FROM first_free_customers AS fpc
+INNER JOIN customers AS c ON fpc.customer_id = c.customer_id
+INNER JOIN employees AS e ON fpc.employee_id = e.employee_id
 ORDER BY c.customer_id;

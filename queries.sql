@@ -1,4 +1,4 @@
--- общее количество покупателей 
+-- общее количество покупателей
 SELECT COUNT(*) AS customers_count
 FROM customers;
 
@@ -16,7 +16,7 @@ LIMIT 10;
 
 -- продавцы с выручкой ниже средней
 WITH seller_avg_income AS (
-    SELECT 
+    SELECT
         e.employee_id,
         TRIM(CONCAT(e.first_name, ' ', e.last_name)) AS seller,
         AVG(p.price * s.quantity) AS avg_income_per_sale
@@ -31,7 +31,7 @@ overall_avg AS (
     FROM seller_avg_income
 )
 
-SELECT 
+SELECT
     sai.seller,
     FLOOR(sai.avg_income_per_sale) AS average_income
 FROM seller_avg_income AS sai
@@ -40,7 +40,7 @@ WHERE sai.avg_income_per_sale < oa.avg_of_averages
 ORDER BY average_income ASC;
 
 -- отчет по выручке по каждому продавцу и дню недели
-SELECT 
+SELECT
     e.first_name || ' ' || e.last_name AS seller,
     LOWER(TRIM(TO_CHAR(s.sale_date, 'day'))) AS day_of_week,
     FLOOR(SUM(p.price * s.quantity)) AS income
@@ -48,7 +48,7 @@ FROM sales AS s
 INNER JOIN employees AS e ON s.sales_person_id = e.employee_id
 INNER JOIN products AS p ON s.product_id = p.product_id
 GROUP BY e.first_name, e.last_name, s.sale_date
-ORDER BY 
+ORDER BY
     EXTRACT(DOW FROM s.sale_date),
     e.first_name || ' ' || e.last_name;
 

@@ -1,13 +1,12 @@
 -- Общее количество покупателей
--- Подсчёт всех записей в таблице customers, включая тех, у кого нет возраста
+-- Подсчёт всех записей в таблице customers
 SELECT
     COUNT(*) AS customers_count
 FROM customers;
 
 
 -- Топ-10 самых прибыльных продавцов
--- Рассчитываем выручку по каждому продавцу как сумму (цена × количество)
--- Сортируем по убыванию и ограничиваем 10 результатами
+-- Выручка = цена × количество, сортировка по убыванию
 SELECT
     e.first_name || ' ' || e.last_name AS seller,
     COUNT(s.sales_id) AS operations,
@@ -21,8 +20,7 @@ LIMIT 10;
 
 
 -- Продавцы с выручкой ниже средней
--- Используем CTE для вычисления средней выручки на сделку по каждому продавцу
--- Затем сравниваем с общим средним и находим тех, кто ниже
+-- Сравниваем среднюю выручку на сделку с общим средним
 WITH seller_avg_income AS (
     SELECT
         e.employee_id,
@@ -34,7 +32,6 @@ WITH seller_avg_income AS (
     GROUP BY e.employee_id, seller
 ),
 overall_avg AS (
-    -- Вычисляем среднее значение средних выручек всех продавцов
     SELECT AVG(avg_income_per_sale) AS avg_of_averages
     FROM seller_avg_income
 )
@@ -48,8 +45,7 @@ ORDER BY average_income ASC;
 
 
 -- Выручка по дням недели и продавцам
--- Группируем по дню недели (на английском, в нижнем регистре) и продавцу
--- Сортируем по порядку дней: понедельник → воскресенье
+-- Группировка по дню недели и продавцу, сортировка по дням: пн → вс
 SELECT
     e.first_name || ' ' || e.last_name AS seller,
     LOWER(TRIM(TO_CHAR(s.sale_date, 'day'))) AS day_of_week,
@@ -75,8 +71,7 @@ ORDER BY
 
 
 -- Распределение покупателей по возрастным группам
--- Группы: 16–25, 26–40, 40+
--- Исключаем записи с NULL в поле age
+-- Группы: 16–25, 26–40, 40+; исключаем NULL в age
 SELECT
     CASE
         WHEN age BETWEEN 16 AND 25 THEN '16-25'
@@ -103,7 +98,7 @@ ORDER BY
 
 
 -- Ежемесячная статистика: количество клиентов и выручка
--- Агрегируем данные по месяцам, считаем уникальных покупателей и общую выручку
+-- Агрегация по месяцам, подсчёт уникальных покупателей и дохода
 SELECT
     TO_CHAR(s.sale_date, 'YYYY-MM') AS selling_month,
     COUNT(DISTINCT s.customer_id) AS total_customers,
@@ -116,8 +111,7 @@ ORDER BY selling_month;
 
 
 -- Первые бесплатные покупки клиентов
--- Находим первую по дате покупку каждого клиента, где цена товара = 0
--- Используем ROW_NUMBER() для нумерации покупок
+-- Находим первую по дате покупку с price = 0 для каждого клиента
 WITH first_sales AS (
     SELECT
         s.customer_id,
@@ -133,12 +127,10 @@ WITH first_sales AS (
     WHERE p.price = 0
 ),
 first_free_customers AS (
-    -- Оставляем только первую покупку (rn = 1)
     SELECT *
     FROM first_sales
     WHERE rn = 1
 )
--- Формируем финальный отчёт: имя клиента, дата покупки, имя продавца
 SELECT
     c.first_name || ' ' || c.last_name AS customer,
     fpc.sale_date,

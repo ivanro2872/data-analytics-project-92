@@ -111,10 +111,11 @@ first_free_customers AS (
 )
 
 SELECT
-    fpc.sale_date
+    fpc.sale_date,
     c.first_name || ' ' || c.last_name AS customer,
     e.first_name || ' ' || e.last_name AS seller
 FROM first_free_customers AS fpc
 INNER JOIN customers AS c ON fpc.customer_id = c.customer_id
 INNER JOIN employees AS e ON fpc.employee_id = e.employee_id
 ORDER BY c.customer_id;
+

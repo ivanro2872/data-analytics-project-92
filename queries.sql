@@ -18,25 +18,22 @@ LIMIT 10;
 WITH seller_avg_income AS (
     SELECT
         e.employee_id,
-        TRIM(CONCAT(e.first_name, ' ', e.last_name)) AS seller,
         AVG(p.price * s.quantity) AS avg_income_per_sale
     FROM sales AS s
     INNER JOIN employees AS e ON s.sales_person_id = e.employee_id
     INNER JOIN products AS p ON s.product_id = p.product_id
-    GROUP BY e.employee_id, e.first_name, e.last_name
-),
-
-overall_avg AS (
-    SELECT AVG(avg_income_per_sale) AS avg_of_averages
-    FROM seller_avg_income
+    GROUP BY e.employee_id
 )
 
 SELECT
-    sai.seller,
+    TRIM(CONCAT(e.first_name, ' ', e.last_name)) AS seller,
     FLOOR(sai.avg_income_per_sale) AS average_income
 FROM seller_avg_income AS sai
-CROSS JOIN overall_avg AS oa
-WHERE sai.avg_income_per_sale < oa.avg_of_averages
+INNER JOIN employees AS e ON sai.employee_id = e.employee_id
+WHERE sai.avg_income_per_sale < (
+    SELECT AVG(avg_income_per_sale) 
+    FROM seller_avg_income
+)
 ORDER BY average_income ASC;
 
 -- отчет по выручке по каждому продавцу и дню недели
@@ -118,4 +115,5 @@ FROM first_free_customers AS fpc
 INNER JOIN customers AS c ON fpc.customer_id = c.customer_id
 INNER JOIN employees AS e ON fpc.employee_id = e.employee_id
 ORDER BY c.customer_id;
+
 

@@ -31,7 +31,7 @@ SELECT
 FROM seller_avg_income AS sai
 INNER JOIN employees AS e ON sai.employee_id = e.employee_id
 WHERE sai.avg_income_per_sale < (
-    SELECT AVG(avg_income_per_sale) 
+    SELECT AVG(avg_income_per_sale)
     FROM seller_avg_income
 )
 ORDER BY average_income ASC;
@@ -102,5 +102,3 @@ INNER JOIN customers AS c ON fs.customer_id = c.customer_id
 INNER JOIN employees AS e ON fs.employee_id = e.employee_id
 WHERE fs.rn = 1
 ORDER BY c.customer_id;
-
-

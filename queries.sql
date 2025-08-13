@@ -105,6 +105,3 @@ INNER JOIN customers AS c ON fs.customer_id = c.customer_id
 INNER JOIN employees AS e ON fs.employee_id = e.employee_id
 WHERE fs.rn = 1
 ORDER BY c.customer_id;
-
-
-
